@@ -27,6 +27,26 @@ server.get("/tweets", (req, res) => {
     }
     res.send(tweets.slice(-10));
 });
+server.get("/tweets/:username", (req, res) => {
+    const username = req.params.username;
+    const usernames = users.map(u => u.username);
+    if (usernames.includes(username)) {
+        const user = users[usernames.indexOf(username)];
+        const userTweets = [];
+        for (let i = 0 ; i < tweets.length ; i++) {
+            if (username === tweets[i].username) {
+                userTweets.push({
+                    username: user.username,
+                    avatar: user.avatar,
+                    tweet: tweets[i].tweet
+                });
+            }
+        }
+        res.status(200).send(userTweets);
+    } else {
+        res.status(400).send("Usuário não existe...");
+    }
+});
 server.post("/tweets", (req, res) => {
     const newTweet = req.body;
     const usernames = users.map(u => u.username);
@@ -46,7 +66,8 @@ server.post("/tweets", (req, res) => {
 
 server.post("/sign-up", (req, res) => {
     const newUser = req.body;
-    if (newUser.username !== "" && validUrl(newUser.avatar)) {
+    const usernames = users.map(u => u.username);
+    if (newUser.username !== "" && !usernames.includes(newUser) && validUrl(newUser.avatar)) {
         if (users[0] === "") {
             users[0] = newUser;
             fs.appendFileSync('./server/storage/users.txt', JSON.stringify(newUser));
