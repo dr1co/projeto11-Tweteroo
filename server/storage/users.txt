@@ -1,0 +1,1 @@
+{"username":"bobspuma","avatar":"https://img.elo7.com.br/product/zoom/7FEDB4/bob-sponja-bob-sponja.jpg"}, {"username":"lulamosusco","avatar":"https://sm.ign.com/ign_br/screenshot/default/1_nqkw.jpg"}

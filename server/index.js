@@ -17,7 +17,7 @@ const users = fs.readFileSync('./server/storage/users.txt', 'utf8').toString().s
 if (users[0] !== "") {
     for (let i = 0; i < users.length; i++) {
         const user = users[i];
-        users = JSON.parse(user);
+        users[i] = JSON.parse(user);
     }
 }
 
@@ -38,6 +38,18 @@ server.post("/tweets", (req, res) => {
     }
     res.send("Pensamento da sua cabeça adicionado com sucesso!");
 })
+
+server.post("/sign-up", (req, res) => {
+    const newUser = req.body;
+    if (users[0] === "") {
+        users[0] = newUser;
+        fs.appendFileSync('./server/storage/users.txt', JSON.stringify(newUser));
+    } else {
+        users.push(newUser);
+        fs.appendFileSync('./server/storage/users.txt', `, ${JSON.stringify(newUser)}`);
+    }
+    res.send("Usuário cadastrado com sucesso!");
+});
 
 console.log("Servidor pronto para ouvir as fofocas!");
 
