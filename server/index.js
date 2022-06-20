@@ -29,28 +29,47 @@ server.get("/tweets", (req, res) => {
 });
 server.post("/tweets", (req, res) => {
     const newTweet = req.body;
-    if (tweets[0] === "") {
-        tweets[0] = newTweet;
-        fs.appendFileSync('./server/storage/tweets.txt', JSON.stringify(newTweet));
+    const usernames = users.map(u => u.username);
+    if (newTweet.username !== "" && usernames.includes(newTweet.username) && newTweet.tweet !== "") {
+        if (tweets[0] === "") {
+            tweets[0] = newTweet;
+            fs.appendFileSync('./server/storage/tweets.txt', JSON.stringify(newTweet));
+        } else {
+            tweets.push(newTweet);
+            fs.appendFileSync('./server/storage/tweets.txt', `, ${JSON.stringify(newTweet)}`);    
+        }
+        res.status(201).send("Pensamento da sua cabeça adicionado com sucesso!");
     } else {
-        tweets.push(newTweet);
-        fs.appendFileSync('./server/storage/tweets.txt', `, ${JSON.stringify(newTweet)}`);    
+        res.status(400).send("Todos os campos são obrigatórios!");
     }
-    res.send("Pensamento da sua cabeça adicionado com sucesso!");
-})
+});
 
 server.post("/sign-up", (req, res) => {
     const newUser = req.body;
-    if (users[0] === "") {
-        users[0] = newUser;
-        fs.appendFileSync('./server/storage/users.txt', JSON.stringify(newUser));
+    if (newUser.username !== "" && validUrl(newUser.avatar)) {
+        if (users[0] === "") {
+            users[0] = newUser;
+            fs.appendFileSync('./server/storage/users.txt', JSON.stringify(newUser));
+        } else {
+            users.push(newUser);
+            fs.appendFileSync('./server/storage/users.txt', `, ${JSON.stringify(newUser)}`);
+        }
+        res.status(201).send("Usuário cadastrado com sucesso!");
     } else {
-        users.push(newUser);
-        fs.appendFileSync('./server/storage/users.txt', `, ${JSON.stringify(newUser)}`);
+        res.status(400).send("Todos os campos são obrigatórios!")
     }
-    res.send("Usuário cadastrado com sucesso!");
 });
 
-console.log("Servidor pronto para ouvir as fofocas!");
+function validUrl(string) {
+    let url;
+    try {
+      url = new URL(string);
+    } catch (_) {
+      return false;  
+    }
+    return url.protocol === "http:" || url.protocol === "https:";
+  }
+
+console.log("Servidor pronto para ouvir as fofocas na porta 5000!");
 
 server.listen(5000);
