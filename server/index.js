@@ -22,10 +22,13 @@ if (users[0] !== "") {
 }
 
 server.get("/tweets", (req, res) => {
+    const lastTweets = tweets.reverse();
+    const startPoint = (req.query.page-1)*10;
+    const endPoint = req.query.page*10 - 1;
     if (tweets.join('') === "") {
         res.send([]);
     }
-    res.send(tweets.slice(-10));
+    res.send(lastTweets.slice(startPoint, endPoint));
 });
 server.get("/tweets/:username", (req, res) => {
     const username = req.params.username;
