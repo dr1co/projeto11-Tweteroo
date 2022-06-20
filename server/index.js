@@ -23,12 +23,28 @@ if (users[0] !== "") {
 
 server.get("/tweets", (req, res) => {
     const lastTweets = tweets.reverse();
-    const startPoint = (req.query.page-1)*10;
-    const endPoint = req.query.page*10 - 1;
+    let page = req.query.page;
+    if (!page) {
+         page = 1;   
+    }
+    const startPoint = (page-1)*10;
+    const endPoint = page*10 - 1;
     if (tweets.join('') === "") {
         res.send([]);
     }
-    res.send(lastTweets.slice(startPoint, endPoint));
+    const tweetsArray = [];
+    for (let i = 0 ; i < lastTweets.length ; i++) {
+        for (let j = 0 ; j < users.length ; j++) {
+            if (users[j].username === lastTweets[i].username) {
+                tweetsArray.push({
+                    username: users[j].username,
+                    avatar: users[j].avatar,
+                    tweet: lastTweets[i].tweet
+                });
+            }
+        }
+    }
+    res.status(200).send(tweetsArray.slice(startPoint, endPoint));
 });
 server.get("/tweets/:username", (req, res) => {
     const username = req.params.username;
@@ -51,15 +67,21 @@ server.get("/tweets/:username", (req, res) => {
     }
 });
 server.post("/tweets", (req, res) => {
-    const newTweet = req.body;
+    const tweetUser = req.headers.user;
+    const newTweet = req.body.tweet;
+    console.log(req.headers, tweetUser, newTweet);
     const usernames = users.map(u => u.username);
-    if (newTweet.username !== "" && usernames.includes(newTweet.username) && newTweet.tweet !== "") {
+    if (tweetUser !== "" && usernames.includes(tweetUser) && newTweet !== "") {
+        const tweetBody = {
+            username: tweetUser,
+            tweet: newTweet,
+        }
         if (tweets[0] === "") {
-            tweets[0] = newTweet;
-            fs.appendFileSync('./server/storage/tweets.txt', JSON.stringify(newTweet));
+            tweets[0] = tweetBody;
+            fs.appendFileSync('./server/storage/tweets.txt', JSON.stringify(tweetBody));
         } else {
-            tweets.push(newTweet);
-            fs.appendFileSync('./server/storage/tweets.txt', `, ${JSON.stringify(newTweet)}`);    
+            tweets.push(tweetBody);
+            fs.appendFileSync('./server/storage/tweets.txt', `, ${JSON.stringify(tweetBody)}`);    
         }
         res.status(201).send("Pensamento da sua cabeça adicionado com sucesso!");
     } else {
